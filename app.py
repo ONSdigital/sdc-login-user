@@ -1,9 +1,7 @@
 import os
 from flask import Flask, request, jsonify
-from jose import jwt
 from jwt import encode, decode
 from jose.exceptions import JWSError
-import json
 
 
 app = Flask(__name__)
@@ -57,12 +55,10 @@ def respondent_units():
     if data and "respondent_id" in data:
         # We have a verified respondent id:
         result = {"respondent_id": data["respondent_id"], "respondent_units": []}
-        respondent_unit = {}
         if data["respondent_id"] == "123":
-            respondent_unit = {"name": "Nursing Ltd.", "reference": "abc"}
+            result["respondent_units"].append({"name": "Nursing Ltd.", "reference": "abc"})
         else:
-            respondent_unit = {"name": "Morgan Stanley", "reference": "$$$"}
-        result["respondent_units"].append(respondent_unit)
+            result["respondent_units"].append({"name": "Morgan Stanley", "reference": "$$$"})
         data["respondent_units"] = result["respondent_units"]
         result["token"] = encode(data)
         return jsonify(result)
@@ -85,8 +81,8 @@ def questionnaires():
                 respondent_unit["questionnaires"] = [questionnaire]
                 return jsonify({"questionnaires": respondent_unit["questionnaires"], token: encode(data)})
     return known_error("Please provide a 'token' header containing a JWT with a respondent_id value "
-                "and one or more respondent_unit entries "
-                "and a query parameter 'reference' identifying the unit you wish to retrieve questionnaires for.")
+                       "and one or more respondent_unit entries "
+                       "and a query parameter 'reference' identifying the unit you wish to get questionnaires for.")
 
 
 @app.errorhandler(400)
