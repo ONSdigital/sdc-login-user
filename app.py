@@ -2,6 +2,7 @@ import os
 from flask import Flask, request, jsonify
 from jose import jwt
 from jwt import encode, decode
+from jose.exceptions import JWSError
 import json
 
 
@@ -35,6 +36,59 @@ def code():
         return known_error("Please provide a Json message with a 'code' field.")
 
 
+@app.route('/profile', methods=['GET'])
+def profile():
+    token = request.headers.get("token")
+    data = validate_token(token)
+
+    if data and "respondent_id" in data:
+        # We have a verified respondent id:
+        if data["respondent_id"] == "123":
+            return jsonify({"name": "Florence Nightingale"})
+        else:
+            return jsonify({"name": "Rob DeBank", "status": "enforcement"})
+
+
+@app.route('/respondent_units', methods=['GET'])
+def respondent_units():
+    token = request.headers.get("token")
+    data = validate_token(token)
+
+    if data and "respondent_id" in data:
+        # We have a verified respondent id:
+        result = {"respondent_id": data["respondent_id"], "respondent_units": []}
+        respondent_unit = {}
+        if data["respondent_id"] == "123":
+            respondent_unit = {"name": "Nursing Ltd.", "reference": "abc"}
+        else:
+            respondent_unit = {"name": "Morgan Stanley", "reference": "$$$"}
+        result["respondent_units"].append(respondent_unit)
+        data["respondent_units"] = result["respondent_units"]
+        result["token"] = encode(data)
+        return jsonify(result)
+    return known_error("Please provide a 'token' header containing a JWT with a respondent_id value.")
+
+
+@app.route('/questionnaires', methods=['GET'])
+def questionnaires():
+    token = request.headers.get("token")
+    data = validate_token(token)
+    reference = request.args.get('reference')
+    print(reference)
+    print(repr(data))
+
+    if data and "respondent_id" in data and "respondent_units" in data:
+        for respondent_unit in data["respondent_units"]:
+            print(respondent_unit["reference"] + " == " + reference)
+            if respondent_unit["reference"] == reference:
+                questionnaire = {"name": "Monthly Commodities Inquiry", }
+                respondent_unit["questionnaires"] = [questionnaire]
+                return jsonify({"questionnaires": respondent_unit["questionnaires"], token: encode(data)})
+    return known_error("Please provide a 'token' header containing a JWT with a respondent_id value "
+                "and one or more respondent_unit entries "
+                "and a query parameter 'reference' identifying the unit you wish to retrieve questionnaires for.")
+
+
 @app.errorhandler(400)
 def known_error(error=None):
     app.logger.error("Bad request: '%s'", request.data.decode('UTF8'))
@@ -64,10 +118,10 @@ def unknown_error(error=None):
 def validate_token(token):
 
     if token:
-        data = decode(token)
-        return data
-    else:
-        return ""
+        try:
+            return decode(token)
+        except JWSError:
+            return ""
 
 
 if __name__ == '__main__':
