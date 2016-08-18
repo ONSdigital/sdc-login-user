@@ -20,11 +20,11 @@ def login():
 
 
 @app.route('/code', methods=['POST'])
-def login():
-    code = request.get_json()
+def code():
+    access_code = request.get_json()
 
-    if code and ("code" in code):
-        token = encode({"code": code["code"]})
+    if access_code and ("code" in access_code):
+        token = encode({"code": access_code["code"]})
         return jsonify({"token": token})
     else:
         return known_error("Request payload was empty")
