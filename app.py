@@ -8,15 +8,20 @@ import json
 app = Flask(__name__)
 
 
+@app.route('/', methods=['GET'])
+def info():
+    return "Try POST to /login or /code"
+
+
 @app.route('/login', methods=['POST'])
 def login():
     user = request.get_json()
 
     if user and ("email" in user):
-        token = encode({"email": user["email"]})
+        token = encode({"email": user["email"], "respondent_id": "123"})
         return jsonify({"token": token})
     else:
-        return known_error("Request payload was empty")
+        return known_error("Please provide a Json message with 'email' and 'password' fields.")
 
 
 @app.route('/code', methods=['POST'])
@@ -24,10 +29,10 @@ def code():
     access_code = request.get_json()
 
     if access_code and ("code" in access_code):
-        token = encode({"code": access_code["code"]})
+        token = encode({"code": access_code["code"], "respondent_id": "123"})
         return jsonify({"token": token})
     else:
-        return known_error("Request payload was empty")
+        return known_error("Please provide a Json message with a 'code' field.")
 
 
 @app.errorhandler(400)
