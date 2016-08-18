@@ -10,16 +10,25 @@ app = Flask(__name__)
 
 @app.route('/login', methods=['POST'])
 def login():
-    print("**** " + repr(request))
     user = request.get_json()
-    print("**** " + repr(user))
 
     if user and ("email" in user):
         token = encode({"email": user["email"]})
         return jsonify({"token": token})
     else:
-        return jsonify(user)
-        #return known_error("Request payload was empty")
+        return known_error("Request payload was empty")
+
+
+@app.route('/code', methods=['POST'])
+def login():
+    code = request.get_json()
+
+    if code and ("code" in code):
+        token = encode({"code": code["code"]})
+        return jsonify({"token": token})
+    else:
+        return known_error("Request payload was empty")
+
 
 @app.errorhandler(400)
 def known_error(error=None):
