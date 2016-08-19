@@ -210,6 +210,29 @@ def questionnaire_entries():
                        "and a query parameter 'reference' identifying the unit you wish to get questionnaires for.")
 
 
+@app.route('/respondents', methods=['GET'])
+def respondent_profiles():
+    token = request.headers.get("token")
+    data = validate_token(token)
+    reference = request.args.get('reference')
+
+    if data and "respondent_id" in data and "respondent_units" in data:
+        for respondent_unit in data["respondent_units"]:
+            # print(respondent_unit["reference"] + " == " + reference)
+            if respondent_unit["reference"] == reference:
+                result = []
+                for respondent_id in respondent_unit["respondents"]:
+                    for respondent in respondents:
+                        if respondent["respondent_id"] == respondent_id:
+                            result.append(respondent)
+                return jsonify(result)
+            else:
+                return unauthorized("Unable to find respondent unit for " + reference)
+    return known_error("Please provide a 'token' header containing a JWT with a respondent_id value "
+                       "and one or more respondent_unit entries "
+                       "and a query parameter 'reference' identifying the unit you wish to get questionnaires for.")
+
+
 @app.errorhandler(401)
 def unauthorized(error=None):
     app.logger.error("Unauthorized: '%s'", request.data.decode('UTF8'))

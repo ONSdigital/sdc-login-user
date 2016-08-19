@@ -32,7 +32,7 @@ def process(response):
 
 component = "sdc-login-user"
 url = "https://" + component + ".herokuapp.com"
-url = "http://localhost:5000"
+# url = "http://localhost:5000"
 print(" >>> Testing " + component + " at " + url)
 
 
@@ -41,16 +41,17 @@ print(" >>> Testing " + component + " at " + url)
 
 # Email address options
 
-#email = "florence.nightingale@example.com"
+# email = "florence.nightingale@example.com"
+# email = "chief.boyce@example.com"
 email = "fireman.sam@example.com"
-#email = "rob.dabank@example.com"
+# email = "rob.dabank@example.com"
 
 
 # Internet access code options
 
-access_code= "abc123"
-#access_code= "def456"
-#access_code= "ghi789"
+access_code = "abc123"
+# access_code= "def456"
+# access_code= "ghi789"
 
 
 token = None
@@ -125,6 +126,24 @@ if result["status"] == 200:
     print("<<< Associated respondent units: " + repr(respondent_units))
 else:
     print("Error: " + str(result["status"]) + " - " + repr(result["text"]))
+
+
+# Respondents for the respondent unit
+
+uri = "/respondents"
+if len(respondent_units) > 0:
+    print("\n --- " + uri + " ---")
+    reference = respondent_units[0]["reference"]
+    print(">>> RU ref: " + repr(reference))
+    parameters = {"reference": reference}
+    result = get(url + uri, parameters=parameters, headers={"token": token})
+    if result["status"] == 200:
+        json = result["json"]
+        print("<<< " + str(len(json)) + " result(s): " + repr(json))
+    else:
+        print("Error: " + str(result["status"]) + " - " + repr(result["text"]))
+else:
+    print(" * No respondent unit to query.")
 
 
 # Questionnaires for the respondent unit
