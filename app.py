@@ -77,8 +77,9 @@ def questionnaires():
         for respondent_unit in data["respondent_units"]:
             print(respondent_unit["reference"] + " == " + reference)
             if respondent_unit["reference"] == reference:
-                questionnaire = {"name": "Monthly Commodities Inquiry", }
-                respondent_unit["questionnaires"] = [questionnaire]
+                questionnaire1 = {"name": "Monthly Commodities Inquiry", "form_type": "023", "period": "0816"}
+                questionnaire2 = {"name": "Retail Sales Inquiry", "form_type": "033", "period": "0816"}
+                respondent_unit["questionnaires"] = [questionnaire1, questionnaire2]
                 return jsonify({"questionnaires": respondent_unit["questionnaires"], "token": encode(data)})
     return known_error("Please provide a 'token' header containing a JWT with a respondent_id value "
                        "and one or more respondent_unit entries "
