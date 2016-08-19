@@ -32,15 +32,27 @@ respondents = [
 access_codes = [
     {
         "code": "abc123",
-        "questionnaire_id": "aaa"
+        "response_id": "801"
     },
     {
         "code": "def456",
-        "questionnaire_id": "bbb"
+        "response_id": "802"
     },
     {
         "code": "ghi789",
-        "questionnaire_id": "ccc"
+        "response_id": "803"
+    },
+    {
+        "code": "jkl012",
+        "response_id": "804"
+    },
+    {
+        "code": "mno345",
+        "response_id": "805"
+    },
+    {
+        "code": "pqr678",
+        "response_id": "806"
     }
 ]
 
@@ -122,7 +134,35 @@ questionnaires = [
 
 @app.route('/', methods=['GET'])
 def info():
-    return "Try POST to /login or /code"
+    return """
+        </ul>
+            <li>Try POST to <a href="/login">/login</a> or <a href="/code">/code</a></li>
+            <li>Valid email addresses are:
+            florence.nightingale@example.com,
+            chief.boyce@example.com,
+            fireman.sam@example.com and
+            rob.dabank@example.com
+            </li>
+            <li>Valid internet access codes are:
+            abc123,
+            def456,
+            ghi789,
+            jkl012,
+            mno345 and
+            pqr678
+            </li>
+            <li>Make a note of the returned token and pass it in a "token" header for other requests.</li>
+            <li>Try GET or POST to <a href="/profile">/profile</a></li>
+            <li>Then try GET to <a href="/respondent_units">/respondent_units</a> to see the RUs the respondent is associated with.</li>
+            <li>Make a note of the expanded token</li>
+            <li>Then try GET to
+            <a href="/questionnaires">/questionnaires</a> and
+            <a href="/respondents">/respondents</a>
+            with a ?reference=... query parameter
+            containing the RU ref to retrieve the lists of
+            questionnaires and respondents associated with the specified RU</li>
+        </ul>
+        """
 
 
 @app.route('/login', methods=['POST'])
