@@ -16,6 +16,7 @@ def post(url, json, headers={}):
 
 def process(response):
     if response.status_code < 400:
+        #print(response.status_code)
         return {
             "status": response.status_code,
             "json": response.json()
@@ -31,13 +32,27 @@ def process(response):
 
 component = "sdc-login-user"
 url = "https://" + component + ".herokuapp.com"
-#url = "http://localhost:5000"
+url = "http://localhost:5000"
 print(" >>> Testing " + component + " at " + url)
 
 
 # Data we're going to work through
 
-email = "test.user@example.com"
+
+# Email address options
+
+#email = "florence.nightingale@example.com"
+email = "fireman.sam@example.com"
+#email = "rob.dabank@example.com"
+
+
+# Internet access code options
+
+access_code= "abc123"
+#access_code= "def456"
+#access_code= "ghi789"
+
+
 token = None
 respondent_id = None
 
@@ -46,7 +61,7 @@ respondent_id = None
 
 uri = "/code"
 print("\n --- " + uri + " ---")
-input = {"code": "abc123"}
+input = {"code": access_code}
 print(">>> " + repr(input))
 result = post(url + uri, dumps(input))
 if result["status"] == 200:
@@ -55,8 +70,8 @@ if result["status"] == 200:
     print("<<< Token: " + token)
     content = get_json(token)
     print("Token content: " + repr(content))
-    respondent_id = content["respondent_id"]
-    print("respondent_id for " + email + " is " + str(respondent_id))
+    questionnaire_id = content["questionnaire_id"]
+    print("questionnaire_id for internet access code " + access_code + " is " + str(questionnaire_id))
 else:
     print("Error: " + str(result["status"]) + " - " + repr(result["text"]))
 
@@ -65,7 +80,7 @@ else:
 
 uri = "/login"
 print("\n --- " + uri + " ---")
-input = {"email": "user@example.com"}
+input = {"email": email}
 print(">>> " + repr(input))
 result = post(url + uri, dumps(input))
 if result["status"] == 200:
@@ -88,13 +103,14 @@ print(">>> (token content) " + repr(get_json(token)))
 result = get(url + uri, headers={"token": token})
 if result["status"] == 200:
     json = result["json"]
-    print("<<< " + json["name"])
+    print("<<< " + dumps(json))
 else:
     print("Error: " + str(result["status"]) + " - " + repr(result["text"]))
 
 
 # Respondent units the respondent is associated with
 
+respondent_units = []
 uri = "/respondent_units"
 print("\n --- " + uri + " ---")
 print(">>> (token content) " + repr(get_json(token)))
