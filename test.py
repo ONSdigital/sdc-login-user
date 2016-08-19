@@ -99,9 +99,19 @@ else:
 # Profile
 
 uri = "/profile"
-print("\n --- " + uri + " ---")
+print("\n --- " + uri + " (query) ---")
 print(">>> (token content) " + repr(get_json(token)))
 result = get(url + uri, headers={"token": token})
+if result["status"] == 200:
+    json = result["json"]
+    print("<<< " + dumps(json))
+else:
+    print("Error: " + str(result["status"]) + " - " + repr(result["text"]))
+
+uri = "/profile"
+print("\n --- " + uri + " (update) ---")
+print(">>> (token content) " + repr(get_json(token)))
+result = post(url + uri, dumps({"name": "Spiderman"}), headers={"token": token})
 if result["status"] == 200:
     json = result["json"]
     print("<<< " + dumps(json))

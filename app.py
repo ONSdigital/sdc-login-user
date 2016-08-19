@@ -168,6 +168,23 @@ def profile():
     return unauthorized("Please provide a token header that includes a respondent_id.")
 
 
+@app.route('/profile', methods=['POST'])
+def profile_update():
+    token = request.headers.get("token")
+    data = validate_token(token)
+    json = request.get_json()
+
+    if data and "respondent_id" in data:
+        # We have a verified respondent id:
+        for respondent in respondents:
+            if respondent["respondent_id"] == data["respondent_id"]:
+                if "name" in json:
+                    respondent["name"] = json["name"]
+                return jsonify(respondent)
+        return known_error("Respondent ID " + str(data["respondent_id"]) + " not found.")
+    return unauthorized("Please provide a token header that includes a respondent_id.")
+
+
 @app.route('/respondent_units', methods=['GET'])
 def respondent_unit_associations():
     token = request.headers.get("token")
