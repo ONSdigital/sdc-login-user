@@ -79,7 +79,7 @@ def questionnaires():
             if respondent_unit["reference"] == reference:
                 questionnaire = {"name": "Monthly Commodities Inquiry", }
                 respondent_unit["questionnaires"] = [questionnaire]
-                return jsonify({"questionnaires": respondent_unit["questionnaires"], token: encode(data)})
+                return jsonify({"questionnaires": respondent_unit["questionnaires"], "token": encode(data)})
     return known_error("Please provide a 'token' header containing a JWT with a respondent_id value "
                        "and one or more respondent_unit entries "
                        "and a query parameter 'reference' identifying the unit you wish to get questionnaires for.")
