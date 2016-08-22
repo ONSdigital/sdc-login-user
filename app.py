@@ -1,10 +1,12 @@
 import os
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from jwt import encode, decode
 from jose.exceptions import JWSError
 
 
 app = Flask(__name__)
+CORS(app)
 
 respondents = [
     {
