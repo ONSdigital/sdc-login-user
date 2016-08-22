@@ -105,11 +105,10 @@ def info():
             <li>Then try GET to <a href="/respondent_units">/respondent_units</a> to see the RUs the respondent is associated with.</li>
             <li>Make a note of the expanded token</li>
             <li>Then try GET to
-            <a href="/questionnaires">/questionnaires</a> and
             <a href="/respondents">/respondents</a>
             with a ?reference=... query parameter
             containing the RU ref to retrieve the lists of
-            questionnaires and respondents associated with the specified RU</li>
+            other respondents associated with the specified RU</li>
         </ul>
         """
 
