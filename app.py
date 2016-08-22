@@ -109,6 +109,9 @@ def info():
             with a ?reference=... query parameter
             containing the RU ref to retrieve the lists of
             other respondents associated with the specified RU</li>
+            <li>Then head over to
+            <a href="https://sdc-questionnaires.herokuapp.com/">https://sdc-questionnaires.herokuapp.com/</a>
+            to query information about assigned questionnaires.</li>
         </ul>
         """
 
