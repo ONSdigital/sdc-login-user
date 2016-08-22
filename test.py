@@ -71,8 +71,8 @@ if result["status"] == 200:
     print("<<< Token: " + token)
     content = get_json(token)
     print("Token content: " + repr(content))
-    questionnaire_id = content["questionnaire_id"]
-    print("questionnaire_id for internet access code " + access_code + " is " + str(questionnaire_id))
+    response_id = content["response_id"]
+    print("response_id for internet access code " + access_code + " is " + str(response_id))
 else:
     print("Error: " + str(result["status"]) + " - " + repr(result["text"]))
 
