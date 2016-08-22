@@ -80,57 +80,6 @@ respondent_units = [
     }
 ]
 
-questionnaires = [
-    {
-        "response_id": "801",
-        "name": "Monthly Commodities Inquiry",
-        "survey_id": "023",
-        "form_type": "0203",
-        "period": "0816",
-        "respondent_unit": "222"
-    },
-    {
-        "response_id": "802",
-        "name": "Monthly Commodities Inquiry",
-        "survey_id": "023",
-        "form_type": "0203",
-        "period": "0816",
-        "respondent_unit": "223"
-    },
-    {
-        "response_id": "803",
-        "name": "Monthly Commodities Inquiry",
-        "survey_id": "023",
-        "form_type": "0203",
-        "period": "0816",
-        "respondent_unit": "224"
-    },
-    {
-        "response_id": "804",
-        "name": "Retail Sales Inquiry",
-        "survey_id": "023",
-        "form_type": "0102",
-        "period": "0816",
-        "respondent_unit": "222"
-    },
-    {
-        "response_id": "805",
-        "name": "Retail Sales Inquiry",
-        "survey_id": "023",
-        "form_type": "0102",
-        "period": "0816",
-        "respondent_unit": "223"
-    },
-    {
-        "response_id": "806",
-        "name": "Retail Sales Inquiry",
-        "survey_id": "023",
-        "form_type": "0102",
-        "period": "0816",
-        "respondent_unit": "224"
-    }
-]
-
 
 @app.route('/', methods=['GET'])
 def info():
@@ -241,30 +190,6 @@ def respondent_unit_associations():
         result["token"] = encode(data)
         return jsonify(result)
     return known_error("Please provide a 'token' header containing a JWT with a respondent_id value.")
-
-
-@app.route('/questionnaires', methods=['GET'])
-def questionnaire_entries():
-    token = request.headers.get("token")
-    data = validate_token(token)
-    reference = request.args.get('reference')
-    # print(reference)
-    # print(repr(data))
-
-    if data and "respondent_id" in data and "respondent_units" in data:
-        for respondent_unit in data["respondent_units"]:
-            # print(respondent_unit["reference"] + " == " + reference)
-            if respondent_unit["reference"] == reference:
-                respondent_unit["questionnaires"] = []
-                for questionnaire in questionnaires:
-                    if questionnaire["respondent_unit"] == reference:
-                        respondent_unit["questionnaires"].append(questionnaire)
-                return jsonify({"questionnaires": respondent_unit["questionnaires"], "token": encode(data)})
-            else:
-                return unauthorized("Unable to find respondent unit for " + reference)
-    return known_error("Please provide a 'token' header containing a JWT with a respondent_id value "
-                       "and one or more respondent_unit entries "
-                       "and a query parameter 'reference' identifying the unit you wish to get questionnaires for.")
 
 
 @app.route('/respondents', methods=['GET'])

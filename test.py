@@ -155,32 +155,3 @@ if len(respondent_units) > 0:
 else:
     print(" * No respondent unit to query.")
 
-
-# Questionnaires for the respondent unit
-
-uri = "/questionnaires"
-if len(respondent_units) > 0:
-    print("\n --- " + uri + " ---")
-    reference = respondent_units[0]["reference"]
-    print(">>> RU ref: " + repr(reference))
-    parameters = {"reference": reference}
-    result = get(url + uri, parameters=parameters, headers={"token": token})
-    if result["status"] == 200:
-        json = result["json"]
-        token = json["token"]
-        print("<<< Token: " + token)
-        content = get_json(token)
-        print("Token content: " + dumps(content, sort_keys=True, indent=4, separators=(',', ': ')))
-        questionnaires = json["questionnaires"]
-        print("<<< " + str(len(questionnaires)) + " result(s): " + repr(questionnaires))
-    else:
-        print("Error: " + str(result["status"]) + " - " + repr(result["text"]))
-else:
-    print(" * No respondent unit to query.")
-
-
-# curl -H "token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyZXNwb25kZW50X2lkIjoiMTIzIiwiZW1haWwiOiJib2JAZXhhbXBsZS5jb20ifQ.MrqSCt_PLIP0XOVKQgSvdXEFZ0QdpTcSajPIPdo9Cfw" \
-#      localhost:5000/respondent_units
-# curl -H "token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyZXNwb25kZW50X3VuaXRzIjpbeyJyZWZlcmVuY2UiOiJhYmMiLCJuYW1lIjoiTnVyc2luZyBMdGQuIn1dLCJyZXNwb25kZW50X2lkIjoiMTIzIiwiZW1haWwiOiJib2JAZXhhbXBsZS5jb20ifQ.Jh9dQiZMFrkouBVR7by9L7BkGagqKmflIKpTUPQ0zMg" \
-#      localhost:5000/questionnaires?reference=abc
-
