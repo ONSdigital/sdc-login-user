@@ -58,7 +58,7 @@ access_codes = [
     }
 ]
 
-respondent_units = [
+reporting_units = [
     {
         "reference": "222",
         "name": "Nursing Ltd.",
@@ -104,7 +104,7 @@ def info():
             </li>
             <li>Make a note of the returned token and pass it in a "token" header for other requests.</li>
             <li>Try GET or POST to <a href="/profile">/profile</a></li>
-            <li>Then try GET to <a href="/respondent_units">/respondent_units</a> to see the RUs the respondent is associated with.</li>
+            <li>Then try GET to <a href="/reporting_units">/reporting_units</a> to see the RUs the respondent is associated with.</li>
             <li>Make a note of the expanded token</li>
             <li>Then try GET to
             <a href="/respondents">/respondents</a>
@@ -178,19 +178,19 @@ def profile_update():
     return unauthorized("Please provide a token header that includes a respondent_id.")
 
 
-@app.route('/respondent_units', methods=['GET'])
-def respondent_unit_associations():
+@app.route('/reporting_units', methods=['GET'])
+def reporting_unit_associations():
     token = request.headers.get("token")
     data = validate_token(token)
 
     if data and "respondent_id" in data:
         # We have a verified respondent id:
-        result = {"respondent_id": data["respondent_id"], "respondent_units": []}
-        for respondent_unit in respondent_units:
-            for respondent_id in respondent_unit["respondents"]:
+        result = {"respondent_id": data["respondent_id"], "reporting_units": []}
+        for reporting_unit in reporting_units:
+            for respondent_id in reporting_unit["respondents"]:
                 if respondent_id == data["respondent_id"]:
-                    result["respondent_units"].append(respondent_unit)
-        data["respondent_units"] = result["respondent_units"]
+                    result["reporting_units"].append(reporting_unit)
+        data["reporting_units"] = result["reporting_units"]
         result["token"] = encode(data)
         return jsonify(result)
     return known_error("Please provide a 'token' header containing a JWT with a respondent_id value.")
@@ -202,12 +202,12 @@ def respondent_profiles():
     data = validate_token(token)
     reference = request.args.get('reference')
 
-    if data and "respondent_id" in data and "respondent_units" in data:
-        for respondent_unit in data["respondent_units"]:
-            # print(respondent_unit["reference"] + " == " + reference)
-            if respondent_unit["reference"] == reference:
+    if data and "respondent_id" in data and "reporting_units" in data:
+        for reporting_unit in data["reporting_units"]:
+            # print(reporting_unit["reference"] + " == " + reference)
+            if reporting_unit["reference"] == reference:
                 result = []
-                for respondent_id in respondent_unit["respondents"]:
+                for respondent_id in reporting_unit["respondents"]:
                     for respondent in respondents:
                         if respondent["respondent_id"] == respondent_id:
                             result.append(respondent)
@@ -215,7 +215,7 @@ def respondent_profiles():
             else:
                 return unauthorized("Unable to find respondent unit for " + reference)
     return known_error("Please provide a 'token' header containing a JWT with a respondent_id value "
-                       "and one or more respondent_unit entries "
+                       "and one or more reporting_unit entries "
                        "and a query parameter 'reference' identifying the unit you wish to get questionnaires for.")
 
 

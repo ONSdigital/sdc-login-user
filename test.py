@@ -121,8 +121,8 @@ else:
 
 # Respondent units the respondent is associated with
 
-respondent_units = []
-uri = "/respondent_units"
+reporting_units = []
+uri = "/reporting_units"
 print("\n --- " + uri + " ---")
 print(">>> (token content) " + repr(get_json(token)))
 result = get(url + uri, headers={"token": token})
@@ -132,8 +132,8 @@ if result["status"] == 200:
     print("<<< Token: " + token)
     content = get_json(token)
     print("Token content: " + repr(content))
-    respondent_units = json["respondent_units"]
-    print("<<< Associated respondent units: " + repr(respondent_units))
+    reporting_units = json["reporting_units"]
+    print("<<< Associated respondent units: " + repr(reporting_units))
 else:
     print("Error: " + str(result["status"]) + " - " + repr(result["text"]))
 
@@ -141,9 +141,9 @@ else:
 # Respondents for the respondent unit
 
 uri = "/respondents"
-if len(respondent_units) > 0:
+if len(reporting_units) > 0:
     print("\n --- " + uri + " ---")
-    reference = respondent_units[0]["reference"]
+    reference = reporting_units[0]["reference"]
     print(">>> RU ref: " + repr(reference))
     parameters = {"reference": reference}
     result = get(url + uri, parameters=parameters, headers={"token": token})
