@@ -129,7 +129,7 @@ def login():
                 return jsonify({"token": token})
         return unauthorized("Access denied")
     else:
-        return known_error("Please provide a Json message with 'email' and 'password' fields.")
+        return unauthorized("Please provide a Json message with 'email' and 'password' fields.")
 
 
 @app.route('/code', methods=['POST'])
@@ -143,7 +143,7 @@ def code():
                 return jsonify({"token": token})
         return unauthorized("Access denied for code " + json["code"])
     else:
-        return known_error("Please provide a Json message with a 'code' field.")
+        return unauthorized("Please provide a Json message with a 'code' field.")
 
 
 @app.route('/profile', methods=['GET'])
@@ -229,3 +229,4 @@ def validate_token(token):
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, host='0.0.0.0', port=port)
+
