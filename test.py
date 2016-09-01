@@ -1,157 +1,192 @@
-import requests
-from json import dumps
+from json import loads, dumps
 from decoder import get_json
+import unittest
+from app import app
 
 
-def get(url, parameters={}, headers={}):
-    response = requests.get(url, params=parameters, headers=headers)
-    return process(response)
+ok = 200
+unauthorized = 401
 
 
-def post(url, json, headers={}):
-    headers["Content-Type"] = "application/json"
-    response = requests.post(url, data=json, headers=headers)
-    return process(response)
+class ComponentTestCase(unittest.TestCase):
+
+    def setUp(self):
+        app.config['TESTING'] = True
+        self.app = app.test_client()
+
+    def tearDown(self):
+        pass
+
+    def get_login_token(self):
+        response = self.app.post("/login", data=dumps({"email": "florence.nightingale@example.com"}), content_type="application/json")
+        string = response.data.decode()
+        json = loads(string)
+        return json["token"]
+
+    def get_code_token(self):
+        response = self.app.post("/code", data=dumps({"code": "abc123"}), content_type="application/json")
+        string = response.data.decode()
+        json = loads(string)
+        return json["token"]
+
+    def test_should_return_unauthorized_for_no_credentials(self):
+
+        # Given
+        # A request with no json message
+
+        # When
+        # We try to login with an account or access code
+        response_login = self.app.post("/login")
+        response_code = self.app.post("/code")
+
+        # Then
+        # We should get an unauthorized status code
+        self.assertEqual(response_login.status_code, unauthorized)
+        self.assertEqual(response_code.status_code, unauthorized)
+
+    def test_should_return_unauthorized_for_invalid_email(self):
+
+        # Given
+        # An invalid email address
+        email = "notauser@example.com"
+
+        # When
+        # We try to authenticate with the email
+        response = self.app.post("/login", data={"email": email})
+
+        # Then
+        # We should get an unauthorized response
+        self.assertEqual(response.status_code, unauthorized)
+
+    def test_should_return_unauthorized_for_invalid_code(self):
+
+        # Given
+        # An invalid internet access code
+        access_code = "000000"
+
+        # When
+        # We try to authenticate with the code
+        response = self.app.post("/code", data={"code": access_code})
+
+        # Then
+        # We should get an unauthorized response
+        self.assertEqual(response.status_code, unauthorized)
+
+    def test_should_return_token_for_valid_email(self):
+
+        # Given
+        # A valid email address
+        # email = "florence.nightingale@example.com"
+        # email = "chief.boyce@example.com"
+        email = "fireman.sam@example.com"
+        # email = "rob.dabank@example.com"
+
+        # When
+        # We try to authenticate with the email address
+        response = self.app.post("/login", data=dumps({"email": email}), content_type="application/json")
+
+        # Then
+        # We should get a response containing "reporting_units" in the data and the updated token.
+        self.assertEqual(response.status_code, ok)
+        string = response.data.decode()
+        json = loads(string)
+        self.assertTrue("token" in json)
+        self.assertTrue("respondent_id" in get_json(json["token"]))
+
+    def test_should_return_token_for_valid_access_code(self):
+
+        # Given
+        # A valid internet access code
+        access_code = "abc123"
+        # access_code= "def456"
+        # access_code= "ghi789"
+
+        # When
+        # We try to authenticate with the code
+        response = self.app.post("/code", data=dumps({"code": access_code}), content_type="application/json")
+
+        # Then
+        # We should get a response containing "reporting_units" in the data and the updated token.
+        self.assertEqual(response.status_code, ok)
+        string = response.data.decode()
+        json = loads(string)
+        self.assertTrue("token" in json)
+        self.assertTrue("response_id" in get_json(json["token"]))
+
+    def test_should_return_profile_for_valid_token(self):
+
+        # Given
+        # A valid account login token
+        token = self.get_login_token()
+
+        # When
+        # We try to get our profile
+        response = self.app.get("/profile", headers={"token": token})
+
+        # Then
+        # We should get a response containing our name and email address.
+        self.assertEqual(response.status_code, ok)
+        string = response.data.decode()
+        json = loads(string)
+        self.assertTrue("name" in json)
+        self.assertTrue("email" in json)
+
+    def test_should_not_return_profile_for_invalid_token(self):
+
+        # Given
+        # A valid token for an access code, not a user account
+        token = self.get_code_token()
+
+        # When
+        # We try to get our profile
+        response = self.app.get("/profile", headers={"token": token})
+
+        # Then
+        # We should get a response containing our name and email address.
+        self.assertNotEqual(response.status_code, ok)
+
+    def test_should_update_profile_for_valid_token(self):
+
+        # Given
+        # A valid account login token and a new name
+        token = self.get_login_token()
+        name = "Lord Quiffle"
+
+        # When
+        # We set our profile
+        response = self.app.post("/profile", headers={"token": token}, data=dumps({"name": name}),
+                                 content_type="application/json")
+
+        # Then
+        # Our name should have changed.
+        self.assertEqual(response.status_code, ok)
+        response = self.app.get("/profile", headers={"token": token})
+        string = response.data.decode()
+        json = loads(string)
+        self.assertTrue("name" in json)
+        self.assertEqual(name, json["name"])
+
+    def test_should_not_update_profile_without_valid_token(self):
+
+        # Given
+        # A valid token for an access code, not a user account
+        token = self.get_code_token()
+        name = "You Shall Not Pass"
+
+        # When
+        # We set our profile
+        response = self.app.post("/profile", headers={"token": token}, data=dumps({"name": name}), content_type="application/json")
+
+        # Then
+        # Our name should have changed.
+        self.assertNotEqual(response.status_code, ok)
+        response = self.app.get("/profile", headers={"token": self.get_login_token()})
+        string = response.data.decode()
+        json = loads(string)
+        self.assertTrue("name" in json)
+        self.assertNotEqual(name, json["name"])
 
 
-def process(response):
-    if response.status_code < 400:
-        #print(response.status_code)
-        return {
-            "status": response.status_code,
-            "json": response.json()
-        }
-    else:
-        return {
-            "status": response.status_code,
-            "text": response.text
-        }
-
-
-# Test the authentication / authorisation API
-
-component = "sdc-login-user"
-url = "https://" + component + ".herokuapp.com"
-# url = "http://localhost:5000"
-print(" >>> Testing " + component + " at " + url)
-
-
-# Data we're going to work through
-
-
-# Email address options
-
-# email = "florence.nightingale@example.com"
-# email = "chief.boyce@example.com"
-email = "fireman.sam@example.com"
-# email = "rob.dabank@example.com"
-
-
-# Internet access code options
-
-access_code = "abc123"
-# access_code= "def456"
-# access_code= "ghi789"
-
-
-token = None
-respondent_id = None
-
-
-# Internet access code
-
-uri = "/code"
-print("\n --- " + uri + " ---")
-input = {"code": access_code}
-print(">>> " + repr(input))
-result = post(url + uri, dumps(input))
-if result["status"] == 200:
-    json = result["json"]
-    token = json["token"]
-    print("<<< Token: " + token)
-    content = get_json(token)
-    print("Token content: " + repr(content))
-    response_id = content["response_id"]
-    print("response_id for internet access code " + access_code + " is " + str(response_id))
-else:
-    print("Error: " + str(result["status"]) + " - " + repr(result["text"]))
-
-
-# Accout login
-
-uri = "/login"
-print("\n --- " + uri + " ---")
-input = {"email": email}
-print(">>> " + repr(input))
-result = post(url + uri, dumps(input))
-if result["status"] == 200:
-    json = result["json"]
-    token = json["token"]
-    print("<<< Token: " + token)
-    content = get_json(token)
-    print("Token content: " + repr(content))
-    respondent_id = content["respondent_id"]
-    print("respondent_id for " + email + " is " + str(respondent_id))
-else:
-    print("Error: " + str(result["status"]) + " - " + repr(result["text"]))
-
-
-# Profile
-
-uri = "/profile"
-print("\n --- " + uri + " (query) ---")
-print(">>> (token content) " + repr(get_json(token)))
-result = get(url + uri, headers={"token": token})
-if result["status"] == 200:
-    json = result["json"]
-    print("<<< " + dumps(json))
-else:
-    print("Error: " + str(result["status"]) + " - " + repr(result["text"]))
-
-uri = "/profile"
-print("\n --- " + uri + " (update) ---")
-print(">>> (token content) " + repr(get_json(token)))
-result = post(url + uri, dumps({"name": "Spiderman"}), headers={"token": token})
-if result["status"] == 200:
-    json = result["json"]
-    print("<<< " + dumps(json))
-else:
-    print("Error: " + str(result["status"]) + " - " + repr(result["text"]))
-
-
-# Respondent units the respondent is associated with
-
-reporting_units = []
-uri = "/reporting_units"
-print("\n --- " + uri + " ---")
-print(">>> (token content) " + repr(get_json(token)))
-result = get(url + uri, headers={"token": token})
-if result["status"] == 200:
-    json = result["json"]
-    token = json["token"]
-    print("<<< Token: " + token)
-    content = get_json(token)
-    print("Token content: " + repr(content))
-    reporting_units = json["reporting_units"]
-    print("<<< Associated respondent units: " + repr(reporting_units))
-else:
-    print("Error: " + str(result["status"]) + " - " + repr(result["text"]))
-
-
-# Respondents for the respondent unit
-
-uri = "/respondents"
-if len(reporting_units) > 0:
-    print("\n --- " + uri + " ---")
-    reference = reporting_units[0]["reference"]
-    print(">>> RU ref: " + repr(reference))
-    parameters = {"reference": reference}
-    result = get(url + uri, parameters=parameters, headers={"token": token})
-    if result["status"] == 200:
-        json = result["json"]
-        print("<<< " + str(len(json)) + " result(s): " + repr(json))
-    else:
-        print("Error: " + str(result["status"]) + " - " + repr(result["text"]))
-else:
-    print(" * No respondent unit to query.")
+if __name__ == '__main__':
+    unittest.main()
 
