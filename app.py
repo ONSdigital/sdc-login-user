@@ -178,52 +178,11 @@ def profile_update():
     return unauthorized("Please provide a token header that includes a respondent_id.")
 
 
-@app.route('/reporting_units', methods=['GET'])
-def reporting_unit_associations():
-    token = request.headers.get("token")
-    data = validate_token(token)
-
-    if data and "respondent_id" in data:
-        # We have a verified respondent id:
-        result = {"respondent_id": data["respondent_id"], "reporting_units": []}
-        for reporting_unit in reporting_units:
-            for respondent_id in reporting_unit["respondents"]:
-                if respondent_id == data["respondent_id"]:
-                    result["reporting_units"].append(reporting_unit)
-        data["reporting_units"] = result["reporting_units"]
-        result["token"] = encode(data)
-        return jsonify(result)
-    return known_error("Please provide a 'token' header containing a JWT with a respondent_id value.")
-
-
-@app.route('/respondents', methods=['GET'])
-def respondent_profiles():
-    token = request.headers.get("token")
-    data = validate_token(token)
-    reference = request.args.get('reference')
-
-    if data and "respondent_id" in data and "reporting_units" in data:
-        for reporting_unit in data["reporting_units"]:
-            # print(reporting_unit["reference"] + " == " + reference)
-            if reporting_unit["reference"] == reference:
-                result = []
-                for respondent_id in reporting_unit["respondents"]:
-                    for respondent in respondents:
-                        if respondent["respondent_id"] == respondent_id:
-                            result.append(respondent)
-                return jsonify(result)
-            else:
-                return unauthorized("Unable to find respondent unit for " + reference)
-    return known_error("Please provide a 'token' header containing a JWT with a respondent_id value "
-                       "and one or more reporting_unit entries "
-                       "and a query parameter 'reference' identifying the unit you wish to get questionnaires for.")
-
-
 @app.errorhandler(401)
 def unauthorized(error=None):
     app.logger.error("Unauthorized: '%s'", request.data.decode('UTF8'))
     message = {
-        'status': 401,
+        # 'status': 401,
         'message': "{}: {}".format(error, request.url),
     }
     resp = jsonify(message)
@@ -236,7 +195,7 @@ def unauthorized(error=None):
 def known_error(error=None):
     app.logger.error("Bad request: '%s'", request.data.decode('UTF8'))
     message = {
-        'status': 400,
+        # 'status': 400,
         'message': "{}: {}".format(error, request.url),
     }
     resp = jsonify(message)
@@ -249,7 +208,7 @@ def known_error(error=None):
 def unknown_error(error=None):
     app.logger.error("Error: '%s'", request.data.decode('UTF8'))
     message = {
-        'status': 500,
+        # 'status': 500,
         'message': "Internal server error: " + repr(error),
     }
     resp = jsonify(message)
