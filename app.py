@@ -3,31 +3,41 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from jwt import encode, decode
 from jose.exceptions import JWSError
+from passlib.context import CryptContext
 
 
 app = Flask(__name__)
 CORS(app)
 
+# "PBKDF2 is probably the best for portability"
+#  http://pythonhosted.org/passlib/new_app_quickstart.html
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], default="pbkdf2_sha256")
+
+# The password hashes below are all hashes of "password"
 respondents = [
     {
         "respondent_id": "101",
         "email": "florence.nightingale@example.com",
-        "name": "Florence Nightingale"
+        "name": "Florence Nightingale",
+        "password_hash": "$pbkdf2-sha256$29000$WEupNebc29s7ZwxhDEGIsQ$bZWvB9NSpCRrV5eZMAcRgWDqPlXB8Ttaz4Scpd0ixA4"
     },
     {
         "respondent_id": "102",
         "email": "chief.boyce@example.com",
-        "name": "Chief Fire Officer Boyce"
+        "name": "Chief Fire Officer Boyce",
+        "password_hash": "$pbkdf2-sha256$29000$WEupNebc29s7ZwxhDEGIsQ$bZWvB9NSpCRrV5eZMAcRgWDqPlXB8Ttaz4Scpd0ixA4"
     },
     {
         "respondent_id": "103",
         "email": "fireman.sam@example.com",
-        "name": "Fireman Sam"
+        "name": "Fireman Sam",
+        "password_hash": "$pbkdf2-sha256$29000$WEupNebc29s7ZwxhDEGIsQ$bZWvB9NSpCRrV5eZMAcRgWDqPlXB8Ttaz4Scpd0ixA4"
     },
     {
         "respondent_id": "104",
         "email": "rob.dabank@example.com",
-        "name": "Robert DaBank"
+        "name": "Robert DaBank",
+        "password_hash": "$pbkdf2-sha256$29000$WEupNebc29s7ZwxhDEGIsQ$bZWvB9NSpCRrV5eZMAcRgWDqPlXB8Ttaz4Scpd0ixA4"
     }
 ]
 
@@ -122,9 +132,9 @@ def info():
 def login():
     user = request.get_json()
 
-    if user and ("email" in user):
+    if user and ("email" in user) and ("password" in user):
         for respondent in respondents:
-            if respondent["email"] == user["email"]:
+            if respondent["email"] == user["email"] and pwd_context.verify(user["password"], respondent["password_hash"]):
                 token = encode(respondent)
                 return jsonify({"token": token})
         return unauthorized("Access denied")

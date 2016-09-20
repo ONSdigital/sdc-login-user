@@ -18,13 +18,19 @@ class ComponentTestCase(unittest.TestCase):
         pass
 
     def get_login_token(self):
-        response = self.app.post("/login", data=dumps({"email": "florence.nightingale@example.com"}), content_type="application/json")
+        response = self.app.post(
+            "/login",
+            data=dumps({"email": "florence.nightingale@example.com", "password": "password"}),
+            content_type="application/json")
         string = response.data.decode()
         json = loads(string)
         return json["token"]
 
     def get_code_token(self):
-        response = self.app.post("/code", data=dumps({"code": "abc123"}), content_type="application/json")
+        response = self.app.post(
+            "/code",
+            data=dumps({"code": "abc123"}),
+            content_type="application/json")
         string = response.data.decode()
         json = loads(string)
         return json["token"]
@@ -80,10 +86,14 @@ class ComponentTestCase(unittest.TestCase):
         # email = "chief.boyce@example.com"
         email = "fireman.sam@example.com"
         # email = "rob.dabank@example.com"
+        password = "password"
 
         # When
         # We try to authenticate with the email address
-        response = self.app.post("/login", data=dumps({"email": email}), content_type="application/json")
+        response = self.app.post(
+            "/login",
+            data=dumps({"email": email, "password": password}),
+            content_type="application/json")
 
         # Then
         # We should get a response containing "reporting_units" in the data and the updated token.
