@@ -4,42 +4,53 @@ from flask_cors import CORS
 from jwt import encode, decode
 from jose.exceptions import JWSError
 from passlib.context import CryptContext
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Column, Integer, String
 
 
 app = Flask(__name__)
+
+# Enable cross-origin requests
 CORS(app)
 
-# "PBKDF2 is probably the best for portability"
-#  http://pythonhosted.org/passlib/new_app_quickstart.html
-pwd_context = CryptContext(schemes=["pbkdf2_sha256"], default="pbkdf2_sha256")
+# Set up the database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+db = SQLAlchemy(app)
 
-# The password hashes below are all hashes of "password"
-respondents = [
-    {
-        "respondent_id": "101",
-        "email": "florence.nightingale@example.com",
-        "name": "Florence Nightingale",
-        "password_hash": "$pbkdf2-sha256$29000$WEupNebc29s7ZwxhDEGIsQ$bZWvB9NSpCRrV5eZMAcRgWDqPlXB8Ttaz4Scpd0ixA4"
-    },
-    {
-        "respondent_id": "102",
-        "email": "chief.boyce@example.com",
-        "name": "Chief Fire Officer Boyce",
-        "password_hash": "$pbkdf2-sha256$29000$WEupNebc29s7ZwxhDEGIsQ$bZWvB9NSpCRrV5eZMAcRgWDqPlXB8Ttaz4Scpd0ixA4"
-    },
-    {
-        "respondent_id": "103",
-        "email": "fireman.sam@example.com",
-        "name": "Fireman Sam",
-        "password_hash": "$pbkdf2-sha256$29000$WEupNebc29s7ZwxhDEGIsQ$bZWvB9NSpCRrV5eZMAcRgWDqPlXB8Ttaz4Scpd0ixA4"
-    },
-    {
-        "respondent_id": "104",
-        "email": "rob.dabank@example.com",
-        "name": "Robert DaBank",
-        "password_hash": "$pbkdf2-sha256$29000$WEupNebc29s7ZwxhDEGIsQ$bZWvB9NSpCRrV5eZMAcRgWDqPlXB8Ttaz4Scpd0ixA4"
-    }
-]
+
+# User model
+class User(db.Model):
+
+    # Columns
+    id = Column(Integer, primary_key=True)
+    respondent_id = Column(String(10))
+    name = Column(String(255))
+    email = Column(String(255), unique=True)
+    password_hash = Column(String(255))
+
+    # Password handling
+    # "PBKDF2 is probably the best for portability"
+    #  http://pythonhosted.org/passlib/new_app_quickstart.html
+    pwd_context = CryptContext(schemes=["pbkdf2_sha256"], default="pbkdf2_sha256")
+
+    def __init__(self, respondent_id=None, name=None, email=None):
+        self.respondent_id = respondent_id
+        self.name = name
+        self.email = email
+
+    def __repr__(self):
+        return '<User %r>' % self.name
+
+    def set_password(self, password):
+        self.password_hash = None
+        if password is not None:
+            self.password_hash = self.pwd_context.encrypt(password)
+
+    def verify_password(self, password):
+        ''' Users can't log in until a password is set. '''
+        return self.password_hash is not None and \
+            self.pwd_context.verify(password, self.password_hash)
+
 
 access_codes = [
     {
@@ -130,12 +141,15 @@ def info():
 
 @app.route('/login', methods=['POST'])
 def login():
-    user = request.get_json()
+    credentials = request.get_json()
 
-    if user and ("email" in user) and ("password" in user):
-        for respondent in respondents:
-            if respondent["email"] == user["email"] and pwd_context.verify(user["password"], respondent["password_hash"]):
-                token = encode(respondent)
+    if credentials and ("email" in credentials) and ("password" in credentials):
+        respondent = User.query.filter_by(email=credentials["email"]).first()
+        if respondent is not None:
+            if respondent.verify_password(credentials["password"]):
+                token = encode({"respondent_id": respondent.respondent_id,
+                                "name": respondent.name,
+                                "email": respondent.email})
                 return jsonify({"token": token})
         return unauthorized("Access denied")
     else:
@@ -234,6 +248,49 @@ def validate_token(token):
 
 
 if __name__ == '__main__':
+
+    #db.drop_all()
+    db.create_all()
+
+    # Set up users
+    respondents = [
+        {
+            "respondent_id": "101",
+            "email": "florence.nightingale@example.com",
+            "name": "Florence Nightingale",
+        },
+        {
+            "respondent_id": "102",
+            "email": "chief.boyce@example.com",
+            "name": "Chief Fire Officer Boyce",
+        },
+        {
+            "respondent_id": "103",
+            "email": "fireman.sam@example.com",
+            "name": "Fireman Sam",
+        },
+        {
+            "respondent_id": "104",
+            "email": "rob.dabank@example.com",
+            "name": "Robert DaBank",
+        }
+    ]
+    for respondent in respondents:
+        if User.query.filter_by(respondent_id=respondent["respondent_id"]).first() is None:
+            user = User(
+                respondent_id=respondent["respondent_id"],
+                email=respondent["email"],
+                name=respondent["name"]
+            )
+            user.set_password("password")
+            db.session.add(user)
+            db.session.commit()
+            print(user)
+
+    # Just to see that test users are present
+    print(User.query.all())
+
+    # Start server
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, host='0.0.0.0', port=port)
 
