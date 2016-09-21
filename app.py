@@ -41,6 +41,11 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % self.name
 
+    def json(self):
+        return {"respondent_id": self.respondent_id,
+                "name": self.name,
+                "email": self.email}
+
     def set_password(self, password):
         self.password_hash = None
         if password is not None:
@@ -147,9 +152,7 @@ def login():
         respondent = User.query.filter_by(email=credentials["email"]).first()
         if respondent is not None:
             if respondent.verify_password(credentials["password"]):
-                token = encode({"respondent_id": respondent.respondent_id,
-                                "name": respondent.name,
-                                "email": respondent.email})
+                token = encode(respondent.json())
                 return jsonify({"token": token})
         return unauthorized("Access denied")
     else:
@@ -177,10 +180,9 @@ def profile():
 
     if data and "respondent_id" in data:
         # We have a verified respondent id:
-        for respondent in respondents:
-            if respondent["respondent_id"] == data["respondent_id"]:
-                print(jsonify(respondent))
-                return jsonify(respondent)
+        respondent = User.query.filter_by(respondent_id=data["respondent_id"]).first()
+        if respondent is not None:
+            return jsonify(respondent.json())
         return known_error("Respondent ID " + str(data["respondent_id"]) + " not found.")
     return unauthorized("Please provide a token header that includes a respondent_id.")
 
@@ -193,11 +195,12 @@ def profile_update():
 
     if data and "respondent_id" in data:
         # We have a verified respondent id:
-        for respondent in respondents:
-            if respondent["respondent_id"] == data["respondent_id"]:
-                if "name" in json:
-                    respondent["name"] = json["name"]
-                return jsonify(respondent)
+        respondent = User.query.filter_by(respondent_id=data["respondent_id"]).first()
+        if respondent is not None:
+            if "name" in json:
+                respondent.name = json["name"]
+                db.session.commit()
+            return jsonify(respondent.json())
         return known_error("Respondent ID " + str(data["respondent_id"]) + " not found.")
     return unauthorized("Please provide a token header that includes a respondent_id.")
 
