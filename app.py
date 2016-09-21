@@ -250,7 +250,7 @@ def validate_token(token):
             return ""
 
 
-if __name__ == '__main__':
+def create_database():
 
     #db.drop_all()
     db.create_all()
@@ -292,6 +292,12 @@ if __name__ == '__main__':
 
     # Just to see that test users are present
     print(User.query.all())
+
+
+if __name__ == '__main__':
+
+    # Create database
+    create_database()
 
     # Start server
     port = int(os.environ.get("PORT", 5000))
