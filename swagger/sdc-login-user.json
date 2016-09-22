@@ -1,0 +1,188 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "SDC public user login",
+        "description": "Login service for the SDC public service",
+        "version": "1.0.0"
+    },
+    "host": "sdc-login-user.herokuapp.com",
+    "schemes": [
+        "https"
+    ],
+    "basePath": "/",
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/login": {
+            "post": {
+                "summary": "Account login",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "body",
+                        "description": "Credentials to authenticate with.",
+                        "schema": {
+                            "$ref": "#/definitions/Credentials"
+                        },
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful login returns a JWT token.",
+                        "schema": {
+                            "$ref": "#/definitions/Token"
+                        }
+                    },
+                    "401": {
+                        "description": "For any non-error condition where authentication fails, including not providing the expected credential key/value pairs."
+                    },
+                    "default": {
+                        "description": "Unexpected error"
+                    }
+                }
+            }
+        },
+        "/code": {
+            "post": {
+                "summary": "Internet access code authentication",
+                "parameters": [
+                    {
+                        "name": "Internet access code",
+                        "in": "body",
+                        "description": "Internet access code to authenticate with.",
+                        "schema": {
+                            "$ref": "#/definitions/Iac"
+                        },
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful IAC validation returns a JWT token.",
+                        "schema": {
+                            "$ref": "#/definitions/Token"
+                        }
+                    },
+                    "401": {
+                        "description": "For any non-error condition where authentication fails, including not providing the expected credential key/value pairs."
+                    },
+                    "default": {
+                        "description": "Unexpected error"
+                    }
+                }
+            }
+        },
+        "/profile": {
+            "get": {
+                "summary": "Retrieve the current user's profile",
+                "parameters": [
+                    {
+                        "name": "sdc-token",
+                        "in": "header",
+                        "description": "A JWT token containing a claim for the user ID.",
+                        "type": "string",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful IAC validation returns a JWT token.",
+                        "schema": {
+                            "$ref": "#/definitions/Profile"
+                        }
+                    },
+                    "401": {
+                        "description": "For any non-error condition where authentication fails, including not providing a user ID in the token header."
+                    },
+                    "default": {
+                        "description": "Unexpected error"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Updates the current user name and/or requests an update to the user email address",
+                "parameters": [
+                    {
+                        "name": "sdc-token",
+                        "in": "header",
+                        "description": "A JWT token containing a claim for the user ID.",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "profile",
+                        "in": "body",
+                        "description": "Updated profile information.",
+                        "schema": {
+                            "$ref": "#/definitions/Profile"
+                        },
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful name change and/or initiation of email verification."
+                    },
+                    "401": {
+                        "description": "For any non-error condition where authentication fails, including not providing a user ID in the token header."
+                    },
+                    "default": {
+                        "description": "Unexpected error"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Credentials": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "description": "Email address of the user"
+                },
+                "password": {
+                    "type": "string",
+                    "description": "The user's password"
+                }
+            }
+        },
+        "Iac": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "description": "Internet access code"
+                }
+            }
+        },
+        "Token": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string",
+                    "description": "The Json Web Token content"
+                }
+            }
+        },
+        "Profile": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "An identifier for this user"
+                },
+                "email": {
+                    "type": "string",
+                    "description": "Email address of the user"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The user's name"
+                }
+            }
+        }
+    }
+}
