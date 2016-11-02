@@ -143,6 +143,10 @@ def info():
         </ul>
         """
 
+@app.route('/loaderio-1cda968ab7d7bf9ca31e6e1d6950cc0d/')
+def loader_id():
+    return "loaderio-1cda968ab7d7bf9ca31e6e1d6950cc0d"
+
 
 @app.route('/login', methods=['POST'])
 def login():
