@@ -14,7 +14,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Set up the database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/users.db'
 db = SQLAlchemy(app)
 
 
@@ -255,6 +255,9 @@ def create_database():
     #db.drop_all()
     db.create_all()
 
+
+def create_users():
+
     # Set up users
     respondents = [
         {
@@ -298,6 +301,7 @@ if __name__ == '__main__':
 
     # Create database
     create_database()
+    create_users()
 
     # Start server
     port = int(os.environ.get("PORT", 5000))

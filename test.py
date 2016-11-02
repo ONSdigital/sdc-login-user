@@ -2,7 +2,7 @@ from json import loads, dumps
 from decoder import get_json
 import unittest
 from app import app
-from app import create_database
+from app import create_database, create_users
 
 
 ok = 200
@@ -200,5 +200,6 @@ class ComponentTestCase(unittest.TestCase):
 
 if __name__ == '__main__':
     create_database()
+    create_users()
     unittest.main()
 
