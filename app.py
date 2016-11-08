@@ -52,7 +52,7 @@ class User(db.Model):
             self.password_hash = self.pwd_context.encrypt(password)
 
     def verify_password(self, password):
-        ''' Users can't log in until a password is set. '''
+        """ Users can't log in until a password is set. """
         return self.password_hash is not None and \
             self.pwd_context.verify(password, self.password_hash)
 
@@ -142,6 +142,7 @@ def info():
             to query information about assigned questionnaires.</li>
         </ul>
         """
+
 
 @app.route('/loaderio-1cda968ab7d7bf9ca31e6e1d6950cc0d/')
 def loader_id():
