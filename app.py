@@ -7,6 +7,8 @@ from passlib.context import CryptContext
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String
 
+# service name (initially used for sqlite file name and schema name)
+SERVICE_NAME = 'bsdc-login-user'
 
 app = Flask(__name__)
 
@@ -14,13 +16,14 @@ app = Flask(__name__)
 CORS(app)
 
 # Set up the database
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:////tmp/sdc-login-user.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:////tmp/{}.db'.format(SERVICE_NAME))
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
 # User model
 class User(db.Model):
-
+    __table_args__ = {'schema': SERVICE_NAME}
     # Columns
     id = Column(Integer, primary_key=True)
     respondent_id = Column(String(10))
