@@ -14,7 +14,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Set up the database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/users.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:////tmp/sdc-login-user.db')
 db = SQLAlchemy(app)
 
 
