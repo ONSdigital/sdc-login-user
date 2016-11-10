@@ -62,58 +62,6 @@ class User(db.Model):
             self.pwd_context.verify(password, self.password_hash)
 
 
-access_codes = [
-    {
-        "code": "abc123",
-        "response_id": "801"
-    },
-    {
-        "code": "def456",
-        "response_id": "802"
-    },
-    {
-        "code": "ghi789",
-        "response_id": "803"
-    },
-    {
-        "code": "jkl012",
-        "response_id": "804"
-    },
-    {
-        "code": "mno345",
-        "response_id": "805"
-    },
-    {
-        "code": "pqr678",
-        "response_id": "806"
-    }
-]
-
-reporting_units = [
-    {
-        "reference": "222",
-        "name": "Nursing Ltd.",
-        "respondents": [
-            "101"
-        ]
-    },
-    {
-        "reference": "223",
-        "name": "Pontypandy fire station.",
-        "respondents": [
-            "102", "103"
-        ]
-    },
-    {
-        "reference": "224",
-        "name": "Morgan Stanley",
-        "respondents": [
-            "104"
-        ]
-    }
-]
-
-
 @app.route('/', methods=['GET'])
 def info():
     return """
@@ -167,20 +115,6 @@ def login():
         return unauthorized("Access denied")
     else:
         return unauthorized("Please provide a Json message with 'email' and 'password' fields.")
-
-
-@app.route('/code', methods=['POST'])
-def code():
-    json = request.get_json()
-
-    if json and ("code" in json):
-        for access_code in access_codes:
-            if access_code["code"] == json["code"]:
-                token = encode(access_code)
-                return jsonify({"token": token})
-        return unauthorized("Access denied for code " + json["code"])
-    else:
-        return unauthorized("Please provide a Json message with a 'code' field.")
 
 
 @app.route('/profile', methods=['GET'])
