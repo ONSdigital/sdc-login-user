@@ -47,9 +47,7 @@ class User(db.Model):
         return '<User %r>' % self.name
 
     def json(self):
-        return {"respondent_id": self.respondent_id,
-                "name": self.name,
-                "email": self.email}
+        return {'respondent_id': self.respondent_id, 'name': self.name, 'email': self.email}
 
     def set_password(self, password):
         self.password_hash = None
@@ -58,8 +56,7 @@ class User(db.Model):
 
     def verify_password(self, password):
         """ Users can't log in until a password is set. """
-        return self.password_hash is not None and \
-            self.pwd_context.verify(password, self.password_hash)
+        return self.password_hash is not None and self.pwd_context.verify(password, self.password_hash)
 
 
 @app.route('/', methods=['GET'])
@@ -127,7 +124,7 @@ def profile():
         respondent = User.query.filter_by(respondent_id=data["respondent_id"]).first()
         if respondent is not None:
             return jsonify(respondent.json())
-        return known_error("Respondent ID " + str(data["respondent_id"]) + " not found.")
+        return known_error('Respondent ID {} not found.'.format(data['respondent_id']))
     return unauthorized("Please provide a token header that includes a respondent_id.")
 
 
@@ -145,53 +142,43 @@ def profile_update():
                 respondent.name = json["name"]
                 db.session.commit()
             return jsonify(respondent.json())
-        return known_error("Respondent ID " + str(data["respondent_id"]) + " not found.")
+        return known_error('Respondent ID {} not found.'.format(data['respondent_id']))
     return unauthorized("Please provide a token header that includes a respondent_id.")
 
 
 @app.errorhandler(401)
 def unauthorized(error=None):
-    app.logger.error("Unauthorized: '%s'", request.data.decode('UTF8'))
-    message = {
-        'message': "{}: {}".format(error, request.url),
-    }
+    app.logger.error("Unauthorized: '{}'".format(request.data.decode('UTF8')))
+    message = {'message': '{}: {}'.format(error, request.url)}
     resp = jsonify(message)
     resp.status_code = 401
-
     return resp
 
 
 @app.errorhandler(400)
 def known_error(error=None):
-    app.logger.error("Bad request: '%s'", request.data.decode('UTF8'))
-    message = {
-        'message': "{}: {}".format(error, request.url),
-    }
+    app.logger.error("Bad request: '{}'".format(request.data.decode('UTF8')))
+    message = {'message': '{}: {}'.format(error, request.url)}
     resp = jsonify(message)
     resp.status_code = 400
-
     return resp
 
 
 @app.errorhandler(500)
 def unknown_error(error=None):
-    app.logger.error("Error: '%s'", request.data.decode('UTF8'))
-    message = {
-        'message': "Internal server error: " + repr(error),
-    }
+    app.logger.error("Error: '{}'".format(request.data.decode('UTF8')))
+    message = {'message': 'Internal server error: {}'.format(error)}
     resp = jsonify(message)
     resp.status_code = 500
-
     return resp
 
 
 def validate_token(token):
-
     if token:
         try:
             return decode(token)
         except JWSError:
-            return ""
+            return ''
 
 
 def create_database():
@@ -228,11 +215,7 @@ def create_users():
     ]
     for respondent in respondents:
         if User.query.filter_by(respondent_id=respondent["respondent_id"]).first() is None:
-            user = User(
-                respondent_id=respondent["respondent_id"],
-                email=respondent["email"],
-                name=respondent["name"]
-            )
+            user = User(respondent_id=respondent['respondent_id'], email=respondent['email'], name=respondent['name'])
             user.set_password("password")
             db.session.add(user)
             db.session.commit()
@@ -243,7 +226,6 @@ def create_users():
 
 
 if __name__ == '__main__':
-
     # Create database
     create_database()
     create_users()
