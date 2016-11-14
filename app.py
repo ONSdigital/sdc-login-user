@@ -5,7 +5,7 @@ from jwt import encode, decode
 from jose.exceptions import JWSError
 from passlib.context import CryptContext
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, DDL, Integer, String, event
 
 # service name (initially used for sqlite file name and schema name)
 SERVICE_NAME = 'bsdc-login-user'
@@ -195,8 +195,9 @@ def validate_token(token):
 
 
 def create_database():
-
     #db.drop_all()
+    if SCHEMA_NAME:
+        event.listen(db.Model.metadata, 'before_create', DDL('CREATE SCHEMA IF NOT EXISTS "{}"'.format(SCHEMA_NAME)))
     db.create_all()
 
 
