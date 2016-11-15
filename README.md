@@ -26,4 +26,4 @@ A user profile contains the following information:
 ## Links
 
 Try:
- * [https://sdc-login-user.herokuapp.com/login](https://sdc-login-user.herokuapp.com/login)
+ * [https://sdc-login-user.herokuapp.com/](https://sdc-login-user.herokuapp.com/)
