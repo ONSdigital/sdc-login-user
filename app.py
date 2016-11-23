@@ -8,7 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String
 
 # service name (initially used for sqlite file name and schema name)
-SERVICE_NAME = 'bsdc-login-user'
+SERVICE_NAME = 'sdc-login-user'
 ENVIRONMENT_NAME = os.getenv('ENVIRONMENT_NAME', 'dev')
 
 app = Flask(__name__)
