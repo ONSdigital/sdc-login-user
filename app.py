@@ -155,6 +155,24 @@ def profile_update():
     return unauthorized("Please provide a token header that includes a respondent_id.")
 
 
+@app.route('/profiles', methods=['GET'])
+def profiles():
+    token = request.headers.get('token')
+    if validate_token(token) is not None:
+
+        respondent_ids = request.args.get('respondent_ids', '').split(',')
+
+        if respondent_ids:
+            # We have verified respondent ids:
+            respondents = User.query.filter(User.respondent_id.in_(respondent_ids)).all()
+            result = {'respondents': [a.as_dict() for a in respondents]}
+            return jsonify(result)
+
+        return unauthorized("Please provide a respondent_ids query string arg.")
+
+    return unauthorized("Please provide a 'token' header containing a valid JWT.")
+
+
 @app.errorhandler(401)
 def unauthorized(error=None):
     app.logger.error("Unauthorized: '{}'".format(request.data.decode('UTF8')))
@@ -183,11 +201,10 @@ def unknown_error(error=None):
 
 
 def validate_token(token):
-    if token:
-        try:
-            return decode(token)
-        except JWSError:
-            return ''
+    try:
+        return decode(token)
+    except Exception:
+        return None
 
 
 def recreate_database():
