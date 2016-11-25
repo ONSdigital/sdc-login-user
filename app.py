@@ -13,6 +13,7 @@ import typing
 # service name (initially used for sqlite file name and schema name)
 SERVICE_NAME = 'sdc-login-user'
 ENVIRONMENT_NAME = os.getenv('ENVIRONMENT_NAME', 'dev')
+PORT = int(os.environ.get('PORT', 5009))
 
 app = Flask(__name__)
 
@@ -261,6 +262,5 @@ if __name__ == '__main__':
         create_users()
 
     # Start server
-    port = int(os.environ.get('PORT', 5009))
-    app.run(debug=True, host='0.0.0.0', port=port, threaded=True)
+    app.run(debug=True, host='0.0.0.0', port=PORT, threaded=True)
 
