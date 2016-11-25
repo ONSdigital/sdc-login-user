@@ -7,6 +7,9 @@ from passlib.context import CryptContext
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String
 
+from typing import Dict
+import typing
+
 # service name (initially used for sqlite file name and schema name)
 SERVICE_NAME = 'sdc-login-user'
 ENVIRONMENT_NAME = os.getenv('ENVIRONMENT_NAME', 'dev')
@@ -52,8 +55,8 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % self.name
 
-    def json(self):
-        return {'respondent_id': self.respondent_id, 'name': self.name, 'email': self.email}
+    def as_dict(self) -> Dict:
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns if c.name not in ['id', 'password_hash']}
 
     def set_password(self, password):
         self.password_hash = None
@@ -113,7 +116,7 @@ def login():
         respondent = User.query.filter_by(email=credentials["email"]).first()
         if respondent is not None:
             if respondent.verify_password(credentials["password"]):
-                token = encode(respondent.json())
+                token = encode(respondent.as_dict())
                 return jsonify({"token": token})
         return unauthorized("Access denied")
     else:
@@ -129,7 +132,7 @@ def profile():
         # We have a verified respondent id:
         respondent = User.query.filter_by(respondent_id=data["respondent_id"]).first()
         if respondent is not None:
-            return jsonify(respondent.json())
+            return jsonify(respondent.as_dict())
         return known_error('Respondent ID {} not found.'.format(data['respondent_id']))
     return unauthorized("Please provide a token header that includes a respondent_id.")
 
@@ -147,7 +150,7 @@ def profile_update():
             if "name" in json:
                 respondent.name = json["name"]
                 db.session.commit()
-            return jsonify(respondent.json())
+            return jsonify(respondent.as_dict())
         return known_error('Respondent ID {} not found.'.format(data['respondent_id']))
     return unauthorized("Please provide a token header that includes a respondent_id.")
 
