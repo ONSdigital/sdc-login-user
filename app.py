@@ -218,7 +218,7 @@ def recreate_database():
 
 
 def create_users():
-
+    """
     # Set up users
     respondents = [
         {
@@ -240,6 +240,35 @@ def create_users():
             "respondent_id": "104",
             "email": "rob.dabank@example.com",
             "name": "Robert DaBank",
+        }
+    ]
+    """
+    # Set up users
+    respondents = [
+        {
+            "respondent_id": "1",
+            "email": "james.smith@example.com",
+            "name": "James Smith",
+        },
+        {
+            "respondent_id": "2",
+            "email": "john.johnson@example.com",
+            "name": "John Johnson",
+        },
+        {
+            "respondent_id": "3",
+            "email": "robert.williams@example.com",
+            "name": "Robert Williams",
+        },
+        {
+            "respondent_id": "4",
+            "email": "michael.jones@example.com",
+            "name": "Michael Jones",
+        },
+        {
+            "respondent_id": "5",
+            "email": "mary.brown@example.com",
+            "name": "Mary Brown",
         }
     ]
     for respondent in respondents:
